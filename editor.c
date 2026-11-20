@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_LINES 100
 #define MAX_LEN 256
@@ -74,10 +75,49 @@ int load_file(const char *name)
     return 0;
 }
 
+/* Print every line containing the given text */
+void search(const char *text)
+{
+    int found = 0;
+    for (int i = 0; i < count; i++)
+    {
+        if (strstr(lines[i], text) != NULL)
+        {
+            printf("%3d: %s\n", i + 1, lines[i]);
+            found++;
+        }
+    }
+    if (found == 0)
+        printf("Not found.\n");
+}
+
+/* Print the number of lines and words in the document */
+void show_stats(void)
+{
+    int words = 0;
+    for (int i = 0; i < count; i++)
+    {
+        int in_word = 0;
+        for (int j = 0; lines[i][j] != '\0'; j++)
+        {
+            if (isspace((unsigned char)lines[i][j]))
+            {
+                in_word = 0;
+            }
+            else if (!in_word)
+            {
+                in_word = 1;
+                words++;
+            }
+        }
+    }
+    printf("Lines: %d, Words: %d\n", count, words);
+}
+
 int main(void)
 {
     char input[MAX_LEN + 20];
-    printf("Line Editor. Commands: i, d, p, s, l, q\n");
+    printf("Line Editor. Commands: i, d, p, s, l, f, c, q\n");
     while (1)
     {
         printf("> ");
@@ -132,6 +172,17 @@ int main(void)
                 printf("Error: could not open file.\n");
             else
                 printf("Loaded %d lines.\n", count);
+        }
+        else if (cmd == 'f')
+        {
+            if (strlen(input) < 3 || input[1] != ' ')
+                printf("Usage: f <text to find>\n");
+            else
+                search(input + 2);
+        }
+        else if (cmd == 'c')
+        {
+            show_stats();
         }
         else if (cmd != '\0')
         {
