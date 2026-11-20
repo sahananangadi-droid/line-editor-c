@@ -45,10 +45,39 @@ int delete_line(int n)
     return 0;
 }
 
+/* Write all lines to a file. Returns 0 on success, -1 on error */
+int save_file(const char *name)
+{
+    FILE *f = fopen(name, "w");
+    if (f == NULL)
+        return -1;
+    for (int i = 0; i < count; i++)
+        fprintf(f, "%s\n", lines[i]);
+    fclose(f);
+    return 0;
+}
+
+/* Replace the document with the contents of a file. Returns 0 on success, -1 on error */
+int load_file(const char *name)
+{
+    FILE *f = fopen(name, "r");
+    if (f == NULL)
+        return -1;
+    char buf[MAX_LEN];
+    count = 0;
+    while (count < MAX_LINES && fgets(buf, MAX_LEN, f) != NULL)
+    {
+        buf[strcspn(buf, "\n")] = '\0';
+        strcpy(lines[count++], buf);
+    }
+    fclose(f);
+    return 0;
+}
+
 int main(void)
 {
     char input[MAX_LEN + 20];
-    printf("Line Editor. Commands: i, d, p, q\n");
+    printf("Line Editor. Commands: i, d, p, s, l, q\n");
     while (1)
     {
         printf("> ");
@@ -58,6 +87,7 @@ int main(void)
 
         char cmd = input[0];
         int n, offset = 0;
+        char name[100];
 
         if (cmd == 'q')
         {
@@ -84,6 +114,24 @@ int main(void)
                 printf("Usage: d <line number>\n");
             else if (delete_line(n) != 0)
                 printf("Error: no such line.\n");
+        }
+        else if (cmd == 's')
+        {
+            if (sscanf(input, "s %99s", name) != 1)
+                printf("Usage: s <filename>\n");
+            else if (save_file(name) != 0)
+                printf("Error: could not save file.\n");
+            else
+                printf("Saved %d lines.\n", count);
+        }
+        else if (cmd == 'l')
+        {
+            if (sscanf(input, "l %99s", name) != 1)
+                printf("Usage: l <filename>\n");
+            else if (load_file(name) != 0)
+                printf("Error: could not open file.\n");
+            else
+                printf("Loaded %d lines.\n", count);
         }
         else if (cmd != '\0')
         {
