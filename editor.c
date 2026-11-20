@@ -7,6 +7,7 @@
 char lines[MAX_LINES][MAX_LEN];
 int count = 0;
 
+/* Print all lines with line numbers */
 void display(void)
 {
     if (count == 0)
@@ -18,6 +19,7 @@ void display(void)
         printf("%3d: %s\n", i + 1, lines[i]);
 }
 
+/* Insert text as line n, shifting lines down. Returns 0 on success, -1 on error */
 int insert_line(int n, const char *text)
 {
     if (count >= MAX_LINES)
@@ -32,10 +34,21 @@ int insert_line(int n, const char *text)
     return 0;
 }
 
+/* Delete line n, shifting lines up. Returns 0 on success, -1 on error */
+int delete_line(int n)
+{
+    if (n < 1 || n > count)
+        return -1;                          /* invalid line */
+    for (int i = n - 1; i < count - 1; i++) /* shift lines up */
+        strcpy(lines[i], lines[i + 1]);
+    count--;
+    return 0;
+}
+
 int main(void)
 {
     char input[MAX_LEN + 20];
-    printf("Line Editor. Type q to quit.\n");
+    printf("Line Editor. Commands: i, d, p, q\n");
     while (1)
     {
         printf("> ");
@@ -64,6 +77,13 @@ int main(void)
             {
                 printf("Error: invalid line number or document full.\n");
             }
+        }
+        else if (cmd == 'd')
+        {
+            if (sscanf(input, "d %d", &n) != 1)
+                printf("Usage: d <line number>\n");
+            else if (delete_line(n) != 0)
+                printf("Error: no such line.\n");
         }
         else if (cmd != '\0')
         {
